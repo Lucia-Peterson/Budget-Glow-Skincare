@@ -4,12 +4,7 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // The Secret Door Logic
-  const [adminMode, setAdminMode] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('admin') === 'secret'; 
-  });
+  const [adminMode, setAdminMode] = useState(false);
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -1865,16 +1860,12 @@ export default function SkincareApp() {
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
           <button 
-          {/* This button only appears if you use the secret link */}
-          {adminMode && (
-            <button 
-              className={`admin-toggle ${adminMode ? 'active' : ''}`}
-              onClick={() => setAdminMode(!adminMode)}
-            >
-              <Settings size={18} />
-              {adminMode ? 'Exit Admin' : 'Admin'}
-            </button>
-          )}
+            className={`admin-toggle ${adminMode ? 'active' : ''}`}
+            onClick={() => setAdminMode(!adminMode)}
+          >
+            <Settings size={18} />
+            {adminMode ? 'Exit Admin' : 'Admin'}
+          </button>
         </header>
 
         {adminMode ? (
@@ -2237,25 +2228,138 @@ function AdminPanel({ products, onAdd, onUpdate, onDelete, showForm, setShowForm
       </div>
     </div>
   );
+}
 
-{adminMode ? (
-          <AdminPanel
-            products={products}
-            onAdd={addProduct}
-            onUpdate={updateProduct}
-            onDelete={deleteProduct}
-            showForm={showProductForm}
-            setShowForm={setShowProductForm}
-            editingProduct={editingProduct}
-            setEditingProduct={setEditingProduct}
+function ProductForm({ product, onSave, onCancel }) {
+  const [formData, setFormData] = useState(product || {
+    name: '',
+    brand: '',
+    price: '',
+    category: 'cleanser',
+    size: '',
+    bestFor: [],
+    concerns: [],
+    stores: [],
+    description: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      price: parseFloat(formData.price)
+    });
+  };
+
+  return (
+    <form className="product-form" onSubmit={handleSubmit}>
+      <h3 style={{ marginBottom: '20px', color: '#f5f5f5' }}>
+        {product ? 'Edit Product' : 'Add New Product'}
+      </h3>
+
+      <div className="form-grid">
+        <div className="form-group">
+          <label>Product Name *</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
           />
-        ) : (
-          <Quiz 
-            products={products} 
-            onComplete={(results) => console.log(results)} 
+        </div>
+
+        <div className="form-group">
+          <label>Brand *</label>
+          <input
+            type="text"
+            value={formData.brand}
+            onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+            required
           />
-        )}
-      </main>
-    </div>
+        </div>
+
+        <div className="form-group">
+          <label>Price *</label>
+          <input
+            type="number"
+            step="0.01"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Category *</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            required
+          >
+            <option value="cleanser">Cleanser</option>
+            <option value="treatment">Treatment</option>
+            <option value="moisturizer">Moisturizer</option>
+            <option value="sunscreen">Sunscreen</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Size *</label>
+          <input
+            type="text"
+            placeholder="e.g., 16 oz"
+            value={formData.size}
+            onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Description</label>
+        <textarea
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Brief product description"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Best For (comma-separated)</label>
+        <input
+          type="text"
+          placeholder="dry, oily, combination, normal"
+          value={Array.isArray(formData.bestFor) ? formData.bestFor.join(', ') : ''}
+          onChange={(e) => setFormData({ 
+            ...formData, 
+            bestFor: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+          })}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Concerns (comma-separated)</label>
+        <input
+          type="text"
+          placeholder="acne, hydration, anti-aging"
+          value={Array.isArray(formData.concerns) ? formData.concerns.join(', ') : ''}
+          onChange={(e) => setFormData({ 
+            ...formData, 
+            concerns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+          })}
+        />
+      </div>
+
+      <div className="form-actions">
+        <button type="button" className="btn" onClick={onCancel}>
+          <X size={16} />
+          Cancel
+        </button>
+        <button type="submit" className="btn primary">
+          <Check size={16} />
+          {product ? 'Update' : 'Add'}
+        </button>
+      </div>
+    </form>
   );
 }
