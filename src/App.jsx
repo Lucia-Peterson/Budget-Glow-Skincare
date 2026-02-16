@@ -10,7 +10,6 @@ export default function SkincareApp() {
     const params = new URLSearchParams(window.location.search);
     return params.get('admin') === 'secret'; 
   });
-  });
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
