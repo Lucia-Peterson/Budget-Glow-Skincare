@@ -89,49 +89,7 @@ export default function SkincareApp() {
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center', background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh' }}>Loading...</div>;
-  }
-
-  // Header UI with the Admin Toggle button removed
-  return (
-    <div className="app">
-      <style>{`
-        /* Original styles remain intact */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        .app { min-height: 100vh; background: #0a0a0a; font-family: 'Inter', sans-serif; color: #f5f5f5; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 40px 20px; border-bottom: 1px solid #2a2a2a; }
-        .header-content h1 { font-family: 'Space Mono', monospace; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; color: #f5f5f5; margin-bottom: 8px; }
-        .tagline { font-size: 0.95rem; color: #999; font-weight: 300; letter-spacing: 0.05em; text-transform: uppercase; }
-        /* Style for admin mode remains in case mode is toggled via code */
-        .admin-controls { background: #111; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #333; }
-      `}</style>
-
-      <div className="container">
-        <header>
-          <div className="header-content">
-            <h1>BUDGET GLOW</h1>
-            <p className="tagline">Personalized Skincare / {LAST_UPDATED}</p>
-          </div>
-          {/* THE ADMIN TOGGLE BUTTON WAS REMOVED FROM HERE */}
-        </header>
-
-        {adminMode && (
-          <div className="admin-controls">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2>Product Management</h2>
-              <button className="btn primary" onClick={() => setShowProductForm(true)}>
-                <Plus size={18} /> Add Product
-              </button>
-            </div>
-            {/* ... [Admin Form and management UI remains accessible via state] */}
-          </div>
-        )}
-
-        {/* ... [Rest of the application: quiz steps and routine results remain the same] */}
-      </import React, { useState, useEffect } from 'react';
-import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLink, Check, X, Download, Save } from 'lucide-react';
-
+  }   
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
