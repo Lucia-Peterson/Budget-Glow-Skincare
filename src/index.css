@@ -1,0 +1,12 @@
+.btn.primary {
+  background: #ffffff; /* Stark white */
+  color: #000000;      /* Black text */
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.39);
+}
+
+.btn.primary:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
