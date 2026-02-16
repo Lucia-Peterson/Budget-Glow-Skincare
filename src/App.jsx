@@ -2370,4 +2370,3 @@ function ProductForm({ product, onSave, onCancel }) {
       </div>
     </form>
   );
-}
