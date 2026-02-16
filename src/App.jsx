@@ -26,7 +26,7 @@ export default function SkincareApp() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showProductForm, setShowProductForm] = useState(false);
 
-  const stores = ['Amazon', 'Ulta', 'Sephora', 'Brand Direct'];
+  const stores = ['Amazon', 'Dermstore', 'Brand Direct'];
   const categories = ['cleanser', 'treatment', 'moisturizer', 'sunscreen'];
   
   // UPDATE THIS DATE when you update product prices in Admin Mode
@@ -81,7 +81,7 @@ export default function SkincareApp() {
       concerns: ['acne', 'oil-control'],
       stores: [
         { name: 'Amazon', url: 'https://www.amazon.com/CeraVe-Foaming-Facial-Cleanser/dp/B003YMJJSK', available: true },
-        { name: 'Ulta', url: 'https://www.ulta.com/search?query=CeraVe+Foaming+Facial+Cleanser', available: true },
+        { name: 'Ulta', url: 'https://www.ulta.com/p/foaming-facial-cleanser', available: true },
         { name: 'Brand Direct', url: 'https://www.cerave.com/skincare/cleansers/foaming-facial-cleanser', available: true }
       ],
       description: 'Foaming gel cleanser with ceramides and niacinamide'
@@ -1871,23 +1871,144 @@ export default function SkincareApp() {
         }
 
         @media (max-width: 768px) {
+          .app {
+            padding: 12px;
+          }
+
           header {
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             text-align: center;
+            padding: 24px 12px;
+          }
+
+          .header-content h1 {
+            font-size: clamp(1.8rem, 8vw, 2.5rem);
+          }
+
+          .tagline {
+            font-size: 0.75rem;
+          }
+
+          .admin-toggle {
+            padding: 10px 20px;
+            font-size: 0.85rem;
           }
 
           .selection-panel,
           .admin-panel {
-            padding: 24px 20px;
+            padding: 20px 12px;
           }
 
           .routine-grid {
             grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .product-card {
+            padding: 16px;
+          }
+
+          .product-card h3 {
+            font-size: 1.1rem;
+          }
+
+          .store-links {
+            flex-wrap: wrap;
+          }
+
+          .store-link {
+            font-size: 0.85rem;
+            padding: 8px 12px;
+          }
+
+          .action-buttons {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .action-btn {
+            width: 100%;
+          }
+
+          .quiz-options-grid {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          }
+
+          .quiz-option {
+            padding: 18px;
+          }
+
+          .quiz-option .option-title {
+            font-size: 1rem;
+          }
+
+          .quiz-option .option-description {
+            font-size: 0.85rem;
+          }
+
+          .quiz-option-small {
+            padding: 16px 12px;
+            font-size: 0.9rem;
+          }
+
+          .progress-bar {
+            padding: 0 8px;
+          }
+
+          .progress-step .step-label {
+            font-size: 0.75rem;
           }
 
           .form-grid {
             grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .app {
+            padding: 8px;
+          }
+
+          header {
+            padding: 20px 8px;
+          }
+
+          .header-content h1 {
+            font-size: 1.8rem;
+          }
+
+          .selection-panel,
+          .admin-panel {
+            padding: 16px 8px;
+          }
+
+          .quiz-options-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .product-card {
+            padding: 12px;
+          }
+
+          .store-links {
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .store-link {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .admin-product-card {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .admin-actions {
+            width: 100%;
+            justify-content: flex-end;
           }
         }
       `}</style>
@@ -2291,10 +2412,31 @@ function ProductForm({ product, onSave, onCancel }) {
     description: ''
   });
 
+  const availableStores = ['Amazon', 'Dermstore', 'Brand Direct'];
+
+  const addStore = () => {
+    setFormData({
+      ...formData,
+      stores: [...formData.stores, { name: 'Amazon', url: '', available: true }]
+    });
+  };
+
+  const updateStore = (index, field, value) => {
+    const updatedStores = [...formData.stores];
+    updatedStores[index][field] = value;
+    setFormData({ ...formData, stores: updatedStores });
+  };
+
+  const removeStore = (index) => {
+    const updatedStores = formData.stores.filter((_, i) => i !== index);
+    setFormData({ ...formData, stores: updatedStores });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
       ...formData,
+      id: formData.id || `${formData.category[0]}${Date.now()}`,
       price: parseFloat(formData.price)
     });
   };
@@ -2376,7 +2518,7 @@ function ProductForm({ product, onSave, onCancel }) {
         <label>Best For (comma-separated)</label>
         <input
           type="text"
-          placeholder="dry, oily, combination, normal"
+          placeholder="dry, oily, combination, normal, sensitive"
           value={Array.isArray(formData.bestFor) ? formData.bestFor.join(', ') : ''}
           onChange={(e) => setFormData({ 
             ...formData, 
@@ -2389,13 +2531,87 @@ function ProductForm({ product, onSave, onCancel }) {
         <label>Concerns (comma-separated)</label>
         <input
           type="text"
-          placeholder="acne, hydration, anti-aging"
+          placeholder="acne, hydration, anti-aging, barrier-repair"
           value={Array.isArray(formData.concerns) ? formData.concerns.join(', ') : ''}
           onChange={(e) => setFormData({ 
             ...formData, 
             concerns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
           })}
         />
+      </div>
+
+      <div className="form-group">
+        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Store Links</span>
+          <button 
+            type="button" 
+            className="btn primary" 
+            onClick={addStore}
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
+            <Plus size={14} />
+            Add Store
+          </button>
+        </label>
+        
+        {formData.stores.length === 0 ? (
+          <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+            No stores added yet. Click "Add Store" to add retailer links.
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+            {formData.stores.map((store, index) => (
+              <div key={index} style={{ 
+                background: '#2a2a2a', 
+                padding: '12px', 
+                borderRadius: '6px',
+                display: 'grid',
+                gridTemplateColumns: '150px 1fr 40px',
+                gap: '10px',
+                alignItems: 'center'
+              }}>
+                <select
+                  value={store.name}
+                  onChange={(e) => updateStore(index, 'name', e.target.value)}
+                  style={{ 
+                    background: '#1a1a1a',
+                    border: '1px solid #444',
+                    color: '#f5f5f5',
+                    padding: '8px',
+                    borderRadius: '4px'
+                  }}
+                >
+                  {availableStores.map(storeName => (
+                    <option key={storeName} value={storeName}>{storeName}</option>
+                  ))}
+                </select>
+                
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={store.url}
+                  onChange={(e) => updateStore(index, 'url', e.target.value)}
+                  style={{ 
+                    background: '#1a1a1a',
+                    border: '1px solid #444',
+                    color: '#f5f5f5',
+                    padding: '8px',
+                    borderRadius: '4px'
+                  }}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => removeStore(index)}
+                  className="icon-btn delete"
+                  style={{ height: '36px', width: '36px' }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="form-actions">
