@@ -4,7 +4,6 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState(false);
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -1859,26 +1858,7 @@ export default function SkincareApp() {
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
-          <button 
-            className={`admin-toggle ${adminMode ? 'active' : ''}`}
-            onClick={() => setAdminMode(!adminMode)}
-          >
-            <Settings size={18} />
-            {adminMode ? 'Exit Admin' : 'Admin'}
-          </button>
-        </header>
-
-        {adminMode ? (
-          <AdminPanel
-            products={products}
-            onAdd={addProduct}
-            onUpdate={updateProduct}
-            onDelete={deleteProduct}
-            showForm={showProductForm}
-            setShowForm={setShowProductForm}
-            editingProduct={editingProduct}
-            setEditingProduct={setEditingProduct}
-          />
+          
         ) : (
           <>
             {/* Progress Indicator */}
