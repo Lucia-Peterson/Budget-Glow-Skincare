@@ -1859,35 +1859,32 @@ export default function SkincareApp() {
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
-         
         </header>
 
-            {/* Progress Indicator */}
-            {quizStep < 4 && (
-              <div className="progress-bar">
-                <div className="progress-steps">
-                  <div className={`progress-step ${quizStep >= 1 ? 'active' : ''}`}>
-                    <div className="step-number">1</div>
-                    <div className="step-label">Skin Type</div>
-                  </div>
-                  <div className={`progress-line ${quizStep >= 2 ? 'active' : ''}`}></div>
-                  <div className={`progress-step ${quizStep >= 2 ? 'active' : ''}`}>
-                    <div className="step-number">2</div>
-                    <div className="step-label">Concerns</div>
-                  </div>
-                  <div className={`progress-line ${quizStep >= 3 ? 'active' : ''}`}></div>
-                  <div className={`progress-step ${quizStep >= 3 ? 'active' : ''}`}>
-                    <div className="step-number">3</div>
-                    <div className="step-label">Preferences</div>
-                  </div>
-                </div>
+        {/* Progress Indicator */}
+        {quizStep < 4 && (
+          <div className="progress-bar">
+            <div className="progress-steps">
+              <div className={`progress-step ${quizStep >= 1 ? 'active' : ''}`}>
+                <div className="step-number">1</div>
+                <div className="step-label">Skin Type</div>
               </div>
+              <div className={`progress-line ${quizStep >= 2 ? 'active' : ''}`}></div>
+              <div className={`progress-step ${quizStep >= 2 ? 'active' : ''}`}>
+                <div className="step-number">2</div>
+                <div className="step-label">Concerns</div>
+              </div>
+              <div className={`progress-line ${quizStep >= 3 ? 'active' : ''}`}></div>
+              <div className={`progress-step ${quizStep >= 3 ? 'active' : ''}`}>
+                <div className="step-number">3</div>
+                <div className="step-label">Preferences</div>
+              </div>
+            </div>
+          </div>
+        )}
 
-            {/* Quiz Steps */}
-            {quizStep === 1 && (
-              <div className="quiz-panel">
-                <h2 className="quiz-title">What's your skin type?</h2>
-                <p className="quiz-subtitle">Select the one that best describes your skin</p>
+        {/* Quiz Steps */}
+        {quizStep === 1 && (
                 
                 <div className="quiz-options">
                   {['dry', 'oily', 'combination', 'normal'].map(type => (
@@ -2340,6 +2337,9 @@ function ProductForm({ product, onSave, onCancel }) {
           {product ? 'Update' : 'Add'}
         </button>
       </div>
-    </form>
+  </form>
   );
 }
+
+// THIS IS THE PART YOU LIKELY NEED TO ADD OR CHECK:
+export default App;
