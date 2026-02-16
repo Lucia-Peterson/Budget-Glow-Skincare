@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLink, Check, X, Download, Save } from 'lucide-react';
 
+/**
+ * ADMIN ACCESS:
+ * - Click the "BUDGET GLOW" logo 5 times quickly
+ * - Enter password when prompted (default: budgetglow2026)
+ * - Change password on line 30
+ */
+
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adminMode, setAdminMode] = useState(false);
-  const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
+  const [quizStep, setQuizStep] = useState(1);
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
   const [selectedStores, setSelectedStores] = useState([]);
@@ -24,6 +31,19 @@ export default function SkincareApp() {
   
   // UPDATE THIS DATE when you update product prices in Admin Mode
   const LAST_UPDATED = 'February 2026';
+  
+  // ADMIN PASSWORD - Change this to something secure!
+  const ADMIN_PASSWORD = 'budgetglow2026';
+  
+  // Function to check admin password
+  const enterAdminMode = () => {
+    const password = prompt('Enter admin password:');
+    if (password === ADMIN_PASSWORD) {
+      setAdminMode(true);
+    } else if (password !== null) {
+      alert('Incorrect password');
+    }
+  };
 
   // Initialize default products
   useEffect(() => {
@@ -932,6 +952,11 @@ export default function SkincareApp() {
           padding: 40px 20px;
           border-bottom: 1px solid #2a2a2a;
           animation: fadeIn 0.6s ease-out;
+        }
+
+        .header-content {
+          cursor: pointer;
+          user-select: none;
         }
 
         .header-content h1 {
@@ -1855,36 +1880,68 @@ export default function SkincareApp() {
 
       <div className="container">
         <header>
-          <div className="header-content">
+          <div 
+            className="header-content"
+            onClick={(e) => {
+              // Secret admin access: click logo 5 times quickly
+              if (!e.detail || e.detail < 5) return;
+              enterAdminMode();
+            }}
+          >
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
+          {adminMode && (
+            <button 
+              className="admin-toggle active"
+              onClick={() => setAdminMode(false)}
+            >
+              <X size={18} />
+              Exit Admin
+            </button>
+          )}
         </header>
 
-        {/* Progress Indicator */}
-        {quizStep < 4 && (
-          <div className="progress-bar">
-            <div className="progress-steps">
-              <div className={`progress-step ${quizStep >= 1 ? 'active' : ''}`}>
-                <div className="step-number">1</div>
-                <div className="step-label">Skin Type</div>
+        {adminMode ? (
+          <AdminPanel
+            products={products}
+            onAdd={addProduct}
+            onUpdate={updateProduct}
+            onDelete={deleteProduct}
+            showForm={showProductForm}
+            setShowForm={setShowProductForm}
+            editingProduct={editingProduct}
+            setEditingProduct={setEditingProduct}
+          />
+        ) : (
+          <>
+            {/* Progress Indicator */}
+            {quizStep < 4 && (
+              <div className="progress-bar">
+                <div className="progress-steps">
+                  <div className={`progress-step ${quizStep >= 1 ? 'active' : ''}`}>
+                    <div className="step-number">1</div>
+                    <div className="step-label">Skin Type</div>
+                  </div>
+                  <div className={`progress-line ${quizStep >= 2 ? 'active' : ''}`}></div>
+                  <div className={`progress-step ${quizStep >= 2 ? 'active' : ''}`}>
+                    <div className="step-number">2</div>
+                    <div className="step-label">Concerns</div>
+                  </div>
+                  <div className={`progress-line ${quizStep >= 3 ? 'active' : ''}`}></div>
+                  <div className={`progress-step ${quizStep >= 3 ? 'active' : ''}`}>
+                    <div className="step-number">3</div>
+                    <div className="step-label">Preferences</div>
+                  </div>
+                </div>
               </div>
-              <div className={`progress-line ${quizStep >= 2 ? 'active' : ''}`}></div>
-              <div className={`progress-step ${quizStep >= 2 ? 'active' : ''}`}>
-                <div className="step-number">2</div>
-                <div className="step-label">Concerns</div>
-              </div>
-              <div className={`progress-line ${quizStep >= 3 ? 'active' : ''}`}></div>
-              <div className={`progress-step ${quizStep >= 3 ? 'active' : ''}`}>
-                <div className="step-number">3</div>
-                <div className="step-label">Preferences</div>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Quiz Steps */}
-        {quizStep === 1 && (
+            {/* Quiz Steps */}
+            {quizStep === 1 && (
+              <div className="quiz-panel">
+                <h2 className="quiz-title">What's your skin type?</h2>
+                <p className="quiz-subtitle">Select the one that best describes your skin</p>
                 
                 <div className="quiz-options">
                   {['dry', 'oily', 'combination', 'normal'].map(type => (
@@ -2337,9 +2394,6 @@ function ProductForm({ product, onSave, onCancel }) {
           {product ? 'Update' : 'Add'}
         </button>
       </div>
-  </form>
+    </form>
   );
 }
-
-// THIS IS THE PART YOU LIKELY NEED TO ADD OR CHECK:
-export default App;
