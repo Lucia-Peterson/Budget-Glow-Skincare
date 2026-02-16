@@ -4,6 +4,7 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adminMode, setAdminMode] = useState(false);
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -1538,21 +1539,6 @@ export default function SkincareApp() {
           color: #999;
         }
 
-        .admin-panel {
-          background: #111;
-          border: 1px solid #222;
-          border-radius: 8px;
-          padding: 40px;
-          margin: 20px 0;
-        }
-
-        .admin-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 32px;
-        }
-
         .category-tabs {
           display: flex;
           gap: 4px;
@@ -1599,24 +1585,6 @@ export default function SkincareApp() {
           grid-template-columns: 1fr auto;
           gap: 20px;
           align-items: start;
-        }
-
-        .admin-product-info h4 {
-          font-size: 1.1rem;
-          color: #f5f5f5;
-          margin-bottom: 8px;
-          font-weight: 600;
-        }
-
-        .admin-product-meta {
-          font-size: 0.85rem;
-          color: #666;
-          margin-bottom: 12px;
-        }
-
-        .admin-actions {
-          display: flex;
-          gap: 8px;
         }
 
         .icon-btn {
@@ -1810,11 +1778,6 @@ export default function SkincareApp() {
             text-align: center;
           }
 
-          .selection-panel,
-          .admin-panel {
-            padding: 24px 20px;
-          }
-
           .routine-grid {
             grid-template-columns: 1fr;
           }
@@ -1830,29 +1793,7 @@ export default function SkincareApp() {
           <div className="header-content">
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
-          </div>
-          <button 
-            className={`admin-toggle ${adminMode ? 'active' : ''}`}
-            onClick={() => setAdminMode(!adminMode)}
-          >
-            <Settings size={18} />
-            {adminMode ? 'Exit Admin' : 'Admin'}
-          </button>
-        </header>
-
-        {adminMode ? (
-          <AdminPanel
-            products={products}
-            onAdd={addProduct}
-            onUpdate={updateProduct}
-            onDelete={deleteProduct}
-            showForm={showProductForm}
-            setShowForm={setShowProductForm}
-            editingProduct={editingProduct}
-            setEditingProduct={setEditingProduct}
-          />
-        ) : (
-          <>
+      
             {/* Progress Indicator */}
             {quizStep < 4 && (
               <div className="progress-bar">
