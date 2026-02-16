@@ -81,7 +81,7 @@ export default function SkincareApp() {
       concerns: ['acne', 'oil-control'],
       stores: [
         { name: 'Amazon', url: 'https://www.amazon.com/CeraVe-Foaming-Facial-Cleanser/dp/B003YMJJSK', available: true },
-        { name: 'Ulta', url: 'https://www.ulta.com/p/foaming-facial-cleanser', available: true },
+        { name: 'Ulta', url: 'https://www.ulta.com/search?query=CeraVe+Foaming+Facial+Cleanser', available: true },
         { name: 'Brand Direct', url: 'https://www.cerave.com/skincare/cleansers/foaming-facial-cleanser', available: true }
       ],
       description: 'Foaming gel cleanser with ceramides and niacinamide'
