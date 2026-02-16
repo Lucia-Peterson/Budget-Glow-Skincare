@@ -2237,7 +2237,6 @@ function AdminPanel({ products, onAdd, onUpdate, onDelete, showForm, setShowForm
       </div>
     </div>
   );
-}
 
 function ProductForm({ product, onSave, onCancel }) {
   const [formData, setFormData] = useState(product || {
