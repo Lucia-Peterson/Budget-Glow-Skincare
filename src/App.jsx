@@ -5,95 +5,6 @@ export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adminMode, setAdminMode] = useState(false);
-  const [quizStep, setQuizStep] = useState(1);
-  const [skinType, setSkinType] = useState('');
-  const [concerns, setConcerns] = useState([]);
-  const [selectedStores, setSelectedStores] = useState([]);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 50 });
-  const [routine, setRoutine] = useState({
-    cleanser: null,
-    treatment: null,
-    moisturizer: null,
-    sunscreen: null
-  });
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [showProductForm, setShowProductForm] = useState(false);
-
-  const stores = ['Amazon', 'Ulta', 'Sephora', 'Brand Direct'];
-  const categories = ['cleanser', 'treatment', 'moisturizer', 'sunscreen'];
-  
-  const LAST_UPDATED = 'February 2026';
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = () => {
-    try {
-      const stored = localStorage.getItem('skincare_products');
-      if (stored) {
-        setProducts(JSON.parse(stored));
-      } else {
-        const defaultProducts = getDefaultProducts();
-        setProducts(defaultProducts);
-        localStorage.setItem('skincare_products', JSON.stringify(defaultProducts));
-      }
-    } catch (error) {
-      console.log('Initializing with default products');
-      const defaultProducts = getDefaultProducts();
-      setProducts(defaultProducts);
-    }
-    setLoading(false);
-  };
-
-  const getDefaultProducts = () => [
-    // ... [Original product list remains here]
-  ];
-
-  const saveProducts = (updatedProducts) => {
-    try {
-      localStorage.setItem('skincare_products', JSON.stringify(updatedProducts));
-      setProducts(updatedProducts);
-    } catch (error) {
-      console.error('Error saving products:', error);
-      alert('Failed to save products. Please try again.');
-    }
-  };
-
-  const addProduct = (productData) => {
-    const newProduct = {
-      ...productData,
-      id: `p${Date.now()}`,
-    };
-    const updatedProducts = [...products, newProduct];
-    saveProducts(updatedProducts);
-    setShowProductForm(false);
-  };
-
-  const updateProduct = (productData) => {
-    const updatedProducts = products.map(p =>
-      p.id === productData.id ? productData : p
-    );
-    saveProducts(updatedProducts);
-    setEditingProduct(null);
-  };
-
-  const deleteProduct = (productId) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      const updatedProducts = products.filter(p => p.id !== productId);
-      saveProducts(updatedProducts);
-    }
-  };
-
-  // ... [Other logic functions like filterProducts, getRecommendedProducts, etc. remain here]
-
-  if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh' }}>Loading...</div>;
-  }   
-export default function SkincareApp() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState(false);
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -1948,28 +1859,9 @@ export default function SkincareApp() {
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
-          <button 
-            className={`admin-toggle ${adminMode ? 'active' : ''}`}
-            onClick={() => setAdminMode(!adminMode)}
-          >
-            <Settings size={18} />
-            {adminMode ? 'Exit Admin' : 'Admin'}
-          </button>
+         
         </header>
 
-        {adminMode ? (
-          <AdminPanel
-            products={products}
-            onAdd={addProduct}
-            onUpdate={updateProduct}
-            onDelete={deleteProduct}
-            showForm={showProductForm}
-            setShowForm={setShowProductForm}
-            editingProduct={editingProduct}
-            setEditingProduct={setEditingProduct}
-          />
-        ) : (
-          <>
             {/* Progress Indicator */}
             {quizStep < 4 && (
               <div className="progress-bar">
@@ -1990,7 +1882,6 @@ export default function SkincareApp() {
                   </div>
                 </div>
               </div>
-            )}
 
             {/* Quiz Steps */}
             {quizStep === 1 && (
@@ -2450,9 +2341,5 @@ function ProductForm({ product, onSave, onCancel }) {
         </button>
       </div>
     </form>
-  );
-}
-div>
-    </div>
   );
 }
