@@ -4,7 +4,13 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState(false);
+  
+  // The Secret Door Logic
+  const [adminMode, setAdminMode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('admin') === 'secret'; 
+  });
+  });
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -1860,12 +1866,16 @@ export default function SkincareApp() {
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
           <button 
-            className={`admin-toggle ${adminMode ? 'active' : ''}`}
-            onClick={() => setAdminMode(!adminMode)}
-          >
-            <Settings size={18} />
-            {adminMode ? 'Exit Admin' : 'Admin'}
-          </button>
+          {/* This button only appears if you use the secret link */}
+          {adminMode && (
+            <button 
+              className={`admin-toggle ${adminMode ? 'active' : ''}`}
+              onClick={() => setAdminMode(!adminMode)}
+            >
+              <Settings size={18} />
+              {adminMode ? 'Exit Admin' : 'Admin'}
+            </button>
+          )}
         </header>
 
         {adminMode ? (
