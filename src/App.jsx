@@ -4,6 +4,7 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adminMode, setAdminMode] = useState(false);
   const [quizStep, setQuizStep] = useState(1); // NEW: Track quiz progress
   const [skinType, setSkinType] = useState('');
   const [concerns, setConcerns] = useState([]);
@@ -950,33 +951,6 @@ export default function SkincareApp() {
           text-transform: uppercase;
         }
 
-        .admin-toggle {
-          background: transparent;
-          border: 1px solid #333;
-          padding: 12px 24px;
-          border-radius: 4px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          transition: all 0.3s ease;
-          color: #999;
-          font-weight: 500;
-          font-size: 0.9rem;
-        }
-
-        .admin-toggle:hover {
-          background: #1a1a1a;
-          border-color: #555;
-          color: #f5f5f5;
-        }
-
-        .admin-toggle.active {
-          background: #f5f5f5;
-          color: #0a0a0a;
-          border-color: #f5f5f5;
-        }
-
         .progress-bar {
           max-width: 800px;
           margin: 40px auto 20px;
@@ -1858,7 +1832,26 @@ export default function SkincareApp() {
             <h1>BUDGET GLOW</h1>
             <p className="tagline">Curated Affordable Skincare</p>
           </div>
-          
+          <button 
+            className={`admin-toggle ${adminMode ? 'active' : ''}`}
+            onClick={() => setAdminMode(!adminMode)}
+          >
+            <Settings size={18} />
+            {adminMode ? 'Exit Admin' : 'Admin'}
+          </button>
+        </header>
+
+        {adminMode ? (
+          <AdminPanel
+            products={products}
+            onAdd={addProduct}
+            onUpdate={updateProduct}
+            onDelete={deleteProduct}
+            showForm={showProductForm}
+            setShowForm={setShowProductForm}
+            editingProduct={editingProduct}
+            setEditingProduct={setEditingProduct}
+          />
         ) : (
           <>
             {/* Progress Indicator */}
