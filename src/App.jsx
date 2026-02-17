@@ -8,6 +8,36 @@ import { Droplet, Sun, Sparkles, Zap, Settings, Plus, Edit2, Trash2, ExternalLin
  * - Change password on line 30
  */
 
+// Helper function to get average price from stores
+const getAveragePrice = (product) => {
+  // If stores have individual prices, calculate average
+  if (product.stores && product.stores.length > 0 && product.stores[0].price) {
+    const prices = product.stores.filter(s => s.price).map(s => s.price);
+    if (prices.length > 0) {
+      return prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    }
+  }
+  // Fallback to product-level price
+  return product.price || 0;
+};
+
+// Helper function to get size display
+const getSizeDisplay = (product) => {
+  // If stores have individual sizes, check if they're all the same
+  if (product.stores && product.stores.length > 0 && product.stores[0].size) {
+    const sizes = product.stores.filter(s => s.size).map(s => s.size);
+    const uniqueSizes = [...new Set(sizes)];
+    
+    if (uniqueSizes.length === 1) {
+      return uniqueSizes[0]; // All same size
+    } else if (uniqueSizes.length > 1) {
+      return 'Various sizes'; // Different sizes
+    }
+  }
+  // Fallback to product-level size
+  return product.size || '';
+};
+
 export default function SkincareApp() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -748,7 +778,8 @@ export default function SkincareApp() {
     return products.filter(product => {
       const matchesStore = selectedStores.length === 0 || 
         product.stores.some(s => selectedStores.includes(s.name) && s.available);
-      const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
+      const avgPrice = getAveragePrice(product);
+      const matchesPrice = avgPrice >= priceRange.min && avgPrice <= priceRange.max;
       return matchesStore && matchesPrice;
     });
   };
@@ -781,10 +812,10 @@ export default function SkincareApp() {
 
   const getTotalCost = () => {
     let total = 0;
-    if (routine.cleanser) total += routine.cleanser.price;
-    if (routine.treatment) total += routine.treatment.price;
-    if (routine.moisturizer) total += routine.moisturizer.price;
-    if (routine.sunscreen) total += routine.sunscreen.price;
+    if (routine.cleanser) total += getAveragePrice(routine.cleanser);
+    if (routine.treatment) total += getAveragePrice(routine.treatment);
+    if (routine.moisturizer) total += getAveragePrice(routine.moisturizer);
+    if (routine.sunscreen) total += getAveragePrice(routine.sunscreen);
     return total.toFixed(2);
   };
 
@@ -907,9 +938,12 @@ export default function SkincareApp() {
         <div className="product-brand">{product.brand}</div>
         <h3>{product.name}</h3>
         <div className="product-meta">
-          <span className="size">{product.size}</span>
-          <span className="price">${product.price}</span>
+          <span className="size">{getSizeDisplay(product)}</span>
+          <span className="price">${getAveragePrice(product).toFixed(2)}</span>
         </div>
+        <p className="product-price-note" style={{ fontSize: '0.75rem', color: '#888', marginTop: '-4px', marginBottom: '8px' }}>
+          Avg. price - may vary by retailer
+        </p>
         <p className="product-description">{product.description}</p>
         <div className="product-tags">
           {product.bestFor.slice(0, 3).map(tag => (
@@ -2376,7 +2410,7 @@ function AdminPanel({ products, onAdd, onUpdate, onDelete, showForm, setShowForm
             <div className="admin-product-info">
               <h4>{product.name}</h4>
               <div className="admin-product-meta">
-                {product.brand} • ${product.price} • {product.size}
+                {product.brand} • ${getAveragePrice(product).toFixed(2)} avg. • {getSizeDisplay(product)}
               </div>
               <div className="product-tags">
                 {product.bestFor.map(tag => (
@@ -2417,7 +2451,7 @@ function ProductForm({ product, onSave, onCancel }) {
   const addStore = () => {
     setFormData({
       ...formData,
-      stores: [...formData.stores, { name: 'Amazon', url: '', available: true }]
+      stores: [...formData.stores, { name: 'Amazon', url: '', price: '', size: '', available: true }]
     });
   };
 
@@ -2434,10 +2468,27 @@ function ProductForm({ product, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Calculate average price from stores
+    const storesWithPrices = formData.stores.filter(s => s.price);
+    const avgPrice = storesWithPrices.length > 0
+      ? storesWithPrices.reduce((sum, s) => sum + parseFloat(s.price), 0) / storesWithPrices.length
+      : 0;
+    
+    // Get size display
+    const sizes = formData.stores.filter(s => s.size).map(s => s.size);
+    const uniqueSizes = [...new Set(sizes)];
+    const sizeDisplay = uniqueSizes.length === 1 ? uniqueSizes[0] : 'Various sizes';
+    
     onSave({
       ...formData,
       id: formData.id || `${formData.category[0]}${Date.now()}`,
-      price: parseFloat(formData.price)
+      price: avgPrice, // Store average for backward compatibility
+      size: sizeDisplay, // Store size display for backward compatibility
+      stores: formData.stores.map(s => ({
+        ...s,
+        price: s.price ? parseFloat(s.price) : undefined,
+      }))
     });
   };
 
@@ -2469,17 +2520,6 @@ function ProductForm({ product, onSave, onCancel }) {
         </div>
 
         <div className="form-group">
-          <label>Price *</label>
-          <input
-            type="number"
-            step="0.01"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="form-group">
           <label>Category *</label>
           <select
             value={formData.category}
@@ -2491,17 +2531,6 @@ function ProductForm({ product, onSave, onCancel }) {
             <option value="moisturizer">Moisturizer</option>
             <option value="sunscreen">Sunscreen</option>
           </select>
-        </div>
-
-        <div className="form-group">
-          <label>Size *</label>
-          <input
-            type="text"
-            placeholder="e.g., 16 oz"
-            value={formData.size}
-            onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-            required
-          />
         </div>
       </div>
 
@@ -2556,58 +2585,112 @@ function ProductForm({ product, onSave, onCancel }) {
         
         {formData.stores.length === 0 ? (
           <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
-            No stores added yet. Click "Add Store" to add retailer links.
+            No stores added yet. Click "Add Store" to add retailer links with prices and sizes.
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
             {formData.stores.map((store, index) => (
               <div key={index} style={{ 
                 background: '#2a2a2a', 
-                padding: '12px', 
+                padding: '16px', 
                 borderRadius: '6px',
-                display: 'grid',
-                gridTemplateColumns: '150px 1fr 40px',
-                gap: '10px',
-                alignItems: 'center'
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
               }}>
-                <select
-                  value={store.name}
-                  onChange={(e) => updateStore(index, 'name', e.target.value)}
-                  style={{ 
-                    background: '#1a1a1a',
-                    border: '1px solid #444',
-                    color: '#f5f5f5',
-                    padding: '8px',
-                    borderRadius: '4px'
-                  }}
-                >
-                  {availableStores.map(storeName => (
-                    <option key={storeName} value={storeName}>{storeName}</option>
-                  ))}
-                </select>
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '140px 1fr 40px',
+                  gap: '10px',
+                  alignItems: 'center'
+                }}>
+                  <select
+                    value={store.name}
+                    onChange={(e) => updateStore(index, 'name', e.target.value)}
+                    style={{ 
+                      background: '#1a1a1a',
+                      border: '1px solid #444',
+                      color: '#f5f5f5',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {availableStores.map(storeName => (
+                      <option key={storeName} value={storeName}>{storeName}</option>
+                    ))}
+                  </select>
+                  
+                  <input
+                    type="url"
+                    placeholder="Product URL (https://...)"
+                    value={store.url}
+                    onChange={(e) => updateStore(index, 'url', e.target.value)}
+                    style={{ 
+                      background: '#1a1a1a',
+                      border: '1px solid #444',
+                      color: '#f5f5f5',
+                      padding: '8px',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  
+                  <button
+                    type="button"
+                    onClick={() => removeStore(index)}
+                    className="icon-btn delete"
+                    style={{ height: '36px', width: '36px' }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
                 
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={store.url}
-                  onChange={(e) => updateStore(index, 'url', e.target.value)}
-                  style={{ 
-                    background: '#1a1a1a',
-                    border: '1px solid #444',
-                    color: '#f5f5f5',
-                    padding: '8px',
-                    borderRadius: '4px'
-                  }}
-                />
-                
-                <button
-                  type="button"
-                  onClick={() => removeStore(index)}
-                  className="icon-btn delete"
-                  style={{ height: '36px', width: '36px' }}
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '10px'
+                }}>
+                  <div>
+                    <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '4px' }}>
+                      Price at {store.name}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={store.price || ''}
+                      onChange={(e) => updateStore(index, 'price', e.target.value)}
+                      style={{ 
+                        background: '#1a1a1a',
+                        border: '1px solid #444',
+                        color: '#f5f5f5',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        width: '100%'
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '4px' }}>
+                      Size at {store.name}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 16 oz"
+                      value={store.size || ''}
+                      onChange={(e) => updateStore(index, 'size', e.target.value)}
+                      style={{ 
+                        background: '#1a1a1a',
+                        border: '1px solid #444',
+                        color: '#f5f5f5',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        width: '100%'
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
