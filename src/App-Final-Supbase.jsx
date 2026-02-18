@@ -75,25 +75,75 @@ export default function SkincareApp() {
     }
   };
 
-  // Initialize default products
+  // Supabase configuration
+  const SUPABASE_URL = 'https://iepatjhevmgqjpqnsdqt.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_SyifveEaJx_5IG2_a0SQ4Q_7rd06-IA';
+  const TABLE = 'Budget-Glow-Web-App';
+
+  const supabaseFetch = async (method, body = null, id = null) => {
+    const url = id
+      ? `${SUPABASE_URL}/rest/v1/${TABLE}?id=eq.${id}`
+      : `${SUPABASE_URL}/rest/v1/${TABLE}`;
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
+    };
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : null
+    });
+    if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+    return method === 'GET' ? res.json() : res;
+  };
+
+  // Map from Supabase column names to app field names
+  const fromDB = (row) => ({
+    ...row,
+    bestFor: row.best_for || [],
+    concerns: row.concerns || [],
+    stores: row.stores || [],
+  });
+
+  // Map from app field names to Supabase column names
+  const toDB = (product) => ({
+    id: product.id,
+    name: product.name,
+    brand: product.brand,
+    price: product.price,
+    category: product.category,
+    size: product.size,
+    best_for: product.bestFor || [],
+    concerns: product.concerns || [],
+    stores: product.stores || [],
+    description: product.description || '',
+  });
+
+  // Initialize - load from Supabase, fall back to defaults if empty
   useEffect(() => {
     loadProducts();
   }, []);
 
-  const loadProducts = () => {
+  const loadProducts = async () => {
     try {
-      const stored = localStorage.getItem('skincare_products');
-      if (stored) {
-        setProducts(JSON.parse(stored));
+      const data = await supabaseFetch('GET');
+      if (data && data.length > 0) {
+        setProducts(data.map(fromDB));
       } else {
-        const defaultProducts = getDefaultProducts();
-        setProducts(defaultProducts);
-        localStorage.setItem('skincare_products', JSON.stringify(defaultProducts));
+        // Database is empty - seed with default products
+        const defaults = getDefaultProducts();
+        setProducts(defaults);
+        // Upload defaults to Supabase
+        for (const product of defaults) {
+          await supabaseFetch('POST', toDB(product));
+        }
       }
     } catch (error) {
-      console.log('Initializing with default products');
-      const defaultProducts = getDefaultProducts();
-      setProducts(defaultProducts);
+      console.error('Error loading from Supabase:', error);
+      // Fall back to defaults if connection fails
+      setProducts(getDefaultProducts());
     }
     setLoading(false);
   };
@@ -739,38 +789,41 @@ export default function SkincareApp() {
     }
   ];
 
-  const saveProducts = (updatedProducts) => {
-    try {
-      localStorage.setItem('skincare_products', JSON.stringify(updatedProducts));
-      setProducts(updatedProducts);
-    } catch (error) {
-      console.error('Error saving products:', error);
-      alert('Failed to save products. Please try again.');
-    }
-  };
-
-  const addProduct = (productData) => {
+  const addProduct = async (productData) => {
     const newProduct = {
       ...productData,
       id: `p${Date.now()}`,
     };
-    const updatedProducts = [...products, newProduct];
-    saveProducts(updatedProducts);
-    setShowProductForm(false);
+    try {
+      await supabaseFetch('POST', toDB(newProduct));
+      setProducts([...products, newProduct]);
+      setShowProductForm(false);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert('Failed to add product. Please try again.');
+    }
   };
 
-  const updateProduct = (productData) => {
-    const updatedProducts = products.map(p =>
-      p.id === productData.id ? productData : p
-    );
-    saveProducts(updatedProducts);
-    setEditingProduct(null);
+  const updateProduct = async (productData) => {
+    try {
+      await supabaseFetch('PATCH', toDB(productData), productData.id);
+      setProducts(products.map(p => p.id === productData.id ? productData : p));
+      setEditingProduct(null);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert('Failed to update product. Please try again.');
+    }
   };
 
-  const deleteProduct = (productId) => {
+  const deleteProduct = async (productId) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      const updatedProducts = products.filter(p => p.id !== productId);
-      saveProducts(updatedProducts);
+      try {
+        await supabaseFetch('DELETE', null, productId);
+        setProducts(products.filter(p => p.id !== productId));
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Failed to delete product. Please try again.');
+      }
     }
   };
 
